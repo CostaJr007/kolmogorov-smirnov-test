@@ -26,7 +26,7 @@ const saveDeliverableToolDef: ChatCompletionTool = {
   function: {
     name: 'save_deliverable',
     description: 'Saves deliverable files with automatic validation. Queue files must have {"vulnerabilities": [...]} structure.',
-    parameters: zodToJsonSchema(SaveDeliverableInputSchema) as Record<string, unknown>,
+    parameters: zodToJsonSchema(SaveDeliverableInputSchema as any) as Record<string, unknown>,
   },
 };
 
@@ -35,7 +35,7 @@ const generateTotpToolDef: ChatCompletionTool = {
   function: {
     name: 'generate_totp',
     description: 'Generates 6-digit TOTP code for authentication. Secret must be base32-encoded.',
-    parameters: zodToJsonSchema(GenerateTotpInputSchema) as Record<string, unknown>,
+    parameters: zodToJsonSchema(GenerateTotpInputSchema as any) as Record<string, unknown>,
   },
 };
 

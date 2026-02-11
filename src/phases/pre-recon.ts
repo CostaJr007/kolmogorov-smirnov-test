@@ -10,7 +10,7 @@ import { Timer } from '../utils/metrics.js';
 import { formatDuration } from '../utils/formatting.js';
 import { handleToolError, PentestError } from '../error-handling.js';
 import { AGENTS } from '../session-manager.js';
-import { runClaudePromptWithRetry } from '../ai/claude-executor.js';
+import { runOpenAIPromptWithRetry } from '../ai/openai-executor.js';
 import { loadPrompt } from '../prompts/prompt-manager.js';
 import type { ToolAvailability } from '../tool-checker.js';
 import type { DistributedConfig } from '../types/config.js';
@@ -158,7 +158,7 @@ async function runPreReconWave1(
   if (pipelineTestingMode) {
     console.log(chalk.gray('    ⏭️ Skipping external tools (pipeline testing mode)'));
     operations.push(
-      runClaudePromptWithRetry(
+      runOpenAIPromptWithRetry(
         await loadPrompt('pre-recon-code', variables, null, pipelineTestingMode),
         sourceDir,
         '*',
@@ -181,7 +181,7 @@ async function runPreReconWave1(
       runTerminalScan('nmap', webUrl),
       runTerminalScan('subfinder', webUrl),
       runTerminalScan('whatweb', webUrl),
-      runClaudePromptWithRetry(
+      runOpenAIPromptWithRetry(
         await loadPrompt('pre-recon-code', variables, null, pipelineTestingMode),
         sourceDir,
         '*',

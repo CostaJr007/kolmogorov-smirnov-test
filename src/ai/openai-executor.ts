@@ -163,12 +163,12 @@ export async function runOpenAIPrompt(
       turnCount++;
       
       // Fix: Explicitly handle undefined vs 'auto' for tool_choice
-      const toolChoice: ChatCompletionToolChoiceOption | undefined = tools.length > 0 ? 'auto' : undefined;
+      const toolChoice: ChatCompletionToolChoiceOption | undefined = (tools && tools.length > 0) ? 'auto' : undefined;
 
       const response = await client.chat.completions.create({
         model: DEFAULT_MODEL,
         messages: currentMessages,
-        tools: tools.length > 0 ? tools : undefined,
+        tools: (tools && tools.length > 0) ? tools : undefined,
         tool_choice: toolChoice,
       });
 
@@ -231,7 +231,7 @@ export async function runOpenAIPrompt(
     progress.finish(formatCompletionMessage(execContext, description, turnCount, duration));
 
     return {
-      result: finalContent,
+      result: typeof finalContent === 'string' ? finalContent : JSON.stringify(finalContent),
       success: true,
       duration,
       turns: turnCount,
