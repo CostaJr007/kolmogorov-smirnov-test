@@ -49,10 +49,10 @@ function truncateStackTrace(failure: ApplicationFailure): void {
 }
 
 import {
-  runClaudePrompt,
+  runOpenAIPromptWithRetry,
   validateAgentOutput,
-  type ClaudePromptResult,
-} from '../ai/claude-executor.js';
+  type OpenAIPromptResult,
+} from '../ai/openai-executor.js';
 import { loadPrompt } from '../prompts/prompt-manager.js';
 import { parseConfig, distributeConfig } from '../config-parser.js';
 import { classifyErrorForTemporal } from '../error-handling.js';
@@ -167,16 +167,19 @@ async function runAgentActivity(
     await auditSession.startAgent(agentName, prompt, attemptNumber);
 
     // 6. Execute agent (single attempt - Temporal handles retries)
-    const result: ClaudePromptResult = await runClaudePrompt(
+    // Using runOpenAIPromptWithRetry here, but note that Temporal also handles retries.
+    // The internal retry logic in runOpenAIPromptWithRetry handles short-term transient errors
+    // and output validation failures that might be fixed by a quick retry with clean context.
+    // Temporal handles larger infrastructure failures or persistent errors.
+    const result: OpenAIPromptResult = await runOpenAIPromptWithRetry(
       prompt,
       repoPath,
+      '', // allowedTools (unused in new executor)
       '', // context
       agentName, // description
       agentName,
       chalk.cyan,
-      sessionMetadata,
-      auditSession,
-      attemptNumber
+      sessionMetadata
     );
 
     // 6.5. Sanity check: Detect spending cap that slipped through all detection layers
@@ -215,6 +218,8 @@ async function runAgentActivity(
     }
 
     // 8. Validate output
+    // Note: runOpenAIPromptWithRetry already does validation, but we double check here
+    // to ensure consistency with the original flow and handle Temporal-specific logic.
     const validationPassed = await validateAgentOutput(result, agentName, repoPath);
     if (!validationPassed) {
       await rollbackGitWorkspace(repoPath, 'validation failure');
